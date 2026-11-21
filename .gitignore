@@ -65,6 +65,15 @@ npm-debug.log*
 /build_native_tests/
 /build_native_ps4/stage/
 /build_native_ps4/upstream_piglet_probe/
+/.agent/
+/.agents/
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/build_hd_native_pkg.bat
+/build_hd_pkg.bat
+/check_update.bat
+/update_rebuild.bat
 
 # Root-level build products and diagnostics
 /*.bin
@@ -78,3 +87,8 @@ native/piglet_upstream/*.gp4
 native/piglet_upstream/piglet/x64/
 native/piglet_upstream/sce_module/
 native/piglet_upstream/sce_sys/
+native/piglet_upstream/assets/audio/
+native/piglet_upstream/assets/fonts/
+native/piglet_upstream/assets/images/.gitkeep
+native/piglet_upstream/assets/misc/
+native/piglet_upstream/assets/videos/
