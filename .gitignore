@@ -63,6 +63,7 @@ npm-debug.log*
 /build_ps4/
 /build_ps4_hd/
 /build_native_tests/
+/build_native_ps4/
 /build_native_ps4/stage/
 /build_native_ps4/upstream_piglet_probe/
 /.agent/
