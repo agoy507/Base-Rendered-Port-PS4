@@ -40,22 +40,22 @@ if ($LASTEXITCODE -ne 0) {
 Add-Type -TypeDefinition @"
 using System.Runtime.InteropServices;
 public static class NativeCoreTest {
-    [DllImport(@"$output")] public static extern int hmbtn_test_performance_contract();
-    [DllImport(@"$output")] public static extern int hmbtn_test_widescreen_viewport();
-    [DllImport(@"$output")] public static extern int hmbtn_test_fixed_step();
-    [DllImport(@"$output")] public static extern int hmbtn_test_gameplay_core();
-    [DllImport(@"$output")] public static extern int hmbtn_test_cheat_chord();
-    [DllImport(@"$output")] public static extern int hmbtn_test_pixels();
+    [DllImport(@"$output")] public static extern int port_base_test_performance_contract();
+    [DllImport(@"$output")] public static extern int port_base_test_widescreen_viewport();
+    [DllImport(@"$output")] public static extern int port_base_test_fixed_step();
+    [DllImport(@"$output")] public static extern int port_base_test_gameplay_core();
+    [DllImport(@"$output")] public static extern int port_base_test_cheat_chord();
+    [DllImport(@"$output")] public static extern int port_base_test_pixels();
 }
 "@
 
 $checks = @(
-    [NativeCoreTest]::hmbtn_test_performance_contract(),
-    [NativeCoreTest]::hmbtn_test_widescreen_viewport(),
-    [NativeCoreTest]::hmbtn_test_fixed_step(),
-    [NativeCoreTest]::hmbtn_test_gameplay_core(),
-    [NativeCoreTest]::hmbtn_test_cheat_chord(),
-    [NativeCoreTest]::hmbtn_test_pixels()
+    [NativeCoreTest]::port_base_test_performance_contract(),
+    [NativeCoreTest]::port_base_test_widescreen_viewport(),
+    [NativeCoreTest]::port_base_test_fixed_step(),
+    [NativeCoreTest]::port_base_test_gameplay_core(),
+    [NativeCoreTest]::port_base_test_cheat_chord(),
+    [NativeCoreTest]::port_base_test_pixels()
 )
 
 if ($checks -contains 0) {

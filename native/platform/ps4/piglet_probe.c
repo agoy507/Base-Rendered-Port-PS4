@@ -13,14 +13,14 @@
 #include <orbis/UserService.h>
 #include <orbis/libkernel.h>
 
-#include "hmbtn/core.h"
+#include "port_base/core.h"
 
-#define HMBTN_SPRITE_COUNT 2048u
-#define HMBTN_VERTICES_PER_SPRITE 6u
-#define HMBTN_FLOATS_PER_VERTEX 4u
-#define HMBTN_PROFILE_WINDOW 300u
-#define HMBTN_ATLAS_SIZE 1024u
-#define HMBTN_RENDER_MODE_CLEAR_ONLY 1u
+#define PORT_BASE_SPRITE_COUNT 2048u
+#define PORT_BASE_VERTICES_PER_SPRITE 6u
+#define PORT_BASE_FLOATS_PER_VERTEX 4u
+#define PORT_BASE_PROFILE_WINDOW 300u
+#define PORT_BASE_ATLAS_SIZE 1024u
+#define PORT_BASE_RENDER_MODE_CLEAR_ONLY 1u
 
 static FILE *g_native_log = NULL;
 
@@ -39,8 +39,8 @@ static void native_log(const char *format, ...) {
 }
 
 static void initialize_logging(void) {
-    mkdir("/data/HarvestMoonBTNNative", 0777);
-    g_native_log = fopen("/data/HarvestMoonBTNNative/perf.log", "w");
+    mkdir("/data/Ps4PortBase", 0777);
+    g_native_log = fopen("/data/Ps4PortBase/perf.log", "w");
 }
 
 static int compare_u64(const void *left, const void *right) {
@@ -54,16 +54,16 @@ static const char *safe_gl_string(GLenum name) {
     return value != NULL ? (const char *)value : "(unavailable)";
 }
 
-typedef struct HmbtnShaderBlob {
+typedef struct PortBaseShaderBlob {
     char *ident;
     unsigned char hash[16];
     uint64_t len;
     unsigned char *code;
-} HmbtnShaderBlob;
+} PortBaseShaderBlob;
 
-extern HmbtnShaderBlob scePrecompiledShaderEntries[];
+extern PortBaseShaderBlob scePrecompiledShaderEntries[];
 
-typedef struct HmbtnPigletState {
+typedef struct PortBasePigletState {
     int32_t piglet_module;
     int32_t shader_module;
     EGLDisplay display;
@@ -82,7 +82,7 @@ typedef struct HmbtnPigletState {
     bool cheat_visible;
     bool cheat_latched;
     bool splash_hide_retried;
-} HmbtnPigletState;
+} PortBasePigletState;
 
 static void identity_matrix(GLfloat matrix[16]) {
     memset(matrix, 0, sizeof(GLfloat) * 16u);
@@ -94,14 +94,14 @@ static void identity_matrix(GLfloat matrix[16]) {
 
 static void projection_1080p(GLfloat matrix[16]) {
     identity_matrix(matrix);
-    matrix[0] = 2.0f / (GLfloat)HMBTN_OUTPUT_WIDTH;
-    matrix[5] = -2.0f / (GLfloat)HMBTN_OUTPUT_HEIGHT;
+    matrix[0] = 2.0f / (GLfloat)PORT_BASE_OUTPUT_WIDTH;
+    matrix[5] = -2.0f / (GLfloat)PORT_BASE_OUTPUT_HEIGHT;
     matrix[12] = -1.0f;
     matrix[13] = 1.0f;
 }
 
-static const HmbtnShaderBlob *find_shader(const char *name) {
-    HmbtnShaderBlob *entry = scePrecompiledShaderEntries;
+static const PortBaseShaderBlob *find_shader(const char *name) {
+    PortBaseShaderBlob *entry = scePrecompiledShaderEntries;
     while (entry->ident != NULL) {
         if (strcmp(entry->ident, name) == 0) {
             return entry;
@@ -111,7 +111,7 @@ static const HmbtnShaderBlob *find_shader(const char *name) {
     return NULL;
 }
 
-static bool load_piglet_modules(HmbtnPigletState *state) {
+static bool load_piglet_modules(PortBasePigletState *state) {
     const char *sandbox = sceKernelGetFsSandboxRandomWord();
     char module_path[256];
     int module_start_result = 0;
@@ -145,12 +145,12 @@ static bool load_piglet_modules(HmbtnPigletState *state) {
     return true;
 }
 
-static bool create_context(HmbtnPigletState *state) {
+static bool create_context(PortBasePigletState *state) {
     OrbisPglConfig configuration;
     OrbisPglWindow render_window = {
         0,
-        HMBTN_OUTPUT_WIDTH,
-        HMBTN_OUTPUT_HEIGHT,
+        PORT_BASE_OUTPUT_WIDTH,
+        PORT_BASE_OUTPUT_HEIGHT,
         0,
     };
     EGLConfig config = NULL;
@@ -193,8 +193,8 @@ static bool create_context(HmbtnPigletState *state) {
     configuration.maxMappedFlexibleMemory = 170u * 1024u * 1024u;
     configuration.drawCommandBufferSize = 1u * 1024u * 1024u;
     configuration.lcueResourceBufferSize = 1u * 1024u * 1024u;
-    configuration.dbgPosCmd_0x40 = HMBTN_OUTPUT_WIDTH;
-    configuration.dbgPosCmd_0x44 = HMBTN_OUTPUT_HEIGHT;
+    configuration.dbgPosCmd_0x40 = PORT_BASE_OUTPUT_WIDTH;
+    configuration.dbgPosCmd_0x44 = PORT_BASE_OUTPUT_HEIGHT;
     configuration.unk_0x5C = 2u;
 
     if (!scePigletSetConfigurationVSH(&configuration)) {
@@ -286,9 +286,9 @@ static bool create_context(HmbtnPigletState *state) {
     return true;
 }
 
-static bool create_program(HmbtnPigletState *state) {
-    const HmbtnShaderBlob *vertex_blob = find_shader("texmap/v_2.vert");
-    const HmbtnShaderBlob *fragment_blob = find_shader("texmap/f_2.frag");
+static bool create_program(PortBasePigletState *state) {
+    const PortBaseShaderBlob *vertex_blob = find_shader("texmap/v_2.vert");
+    const PortBaseShaderBlob *fragment_blob = find_shader("texmap/f_2.frag");
     if (vertex_blob == NULL || fragment_blob == NULL) {
         native_log("[NATIVE INIT] Precompiled shader blobs not found\n");
         return false;
@@ -387,16 +387,16 @@ static bool create_program(HmbtnPigletState *state) {
     return true;
 }
 
-static bool create_texture(HmbtnPigletState *state) {
+static bool create_texture(PortBasePigletState *state) {
     const size_t atlas_bytes =
-        (size_t)HMBTN_ATLAS_SIZE * HMBTN_ATLAS_SIZE * 4u;
+        (size_t)PORT_BASE_ATLAS_SIZE * PORT_BASE_ATLAS_SIZE * 4u;
     uint8_t *pixels = (uint8_t *)malloc(atlas_bytes);
     if (pixels == NULL) {
         return false;
     }
-    for (uint32_t y = 0u; y < HMBTN_ATLAS_SIZE; ++y) {
-        for (uint32_t x = 0u; x < HMBTN_ATLAS_SIZE; ++x) {
-            const size_t offset = ((size_t)y * HMBTN_ATLAS_SIZE + x) * 4u;
+    for (uint32_t y = 0u; y < PORT_BASE_ATLAS_SIZE; ++y) {
+        for (uint32_t x = 0u; x < PORT_BASE_ATLAS_SIZE; ++x) {
+            const size_t offset = ((size_t)y * PORT_BASE_ATLAS_SIZE + x) * 4u;
             const uint8_t checker = (uint8_t)(((x >> 5u) ^ (y >> 5u)) & 1u);
             pixels[offset + 0u] = checker != 0u ? 0x52u : 0xD9u;
             pixels[offset + 1u] = checker != 0u ? 0xB7u : 0xB4u;
@@ -412,8 +412,8 @@ static bool create_texture(HmbtnPigletState *state) {
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        HMBTN_ATLAS_SIZE,
-        HMBTN_ATLAS_SIZE,
+        PORT_BASE_ATLAS_SIZE,
+        PORT_BASE_ATLAS_SIZE,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -445,17 +445,17 @@ static void write_vertex(
     *(*cursor)++ = v;
 }
 
-static bool create_sprite_batch(HmbtnPigletState *state) {
+static bool create_sprite_batch(PortBasePigletState *state) {
     const size_t float_count =
-        HMBTN_SPRITE_COUNT * HMBTN_VERTICES_PER_SPRITE *
-        HMBTN_FLOATS_PER_VERTEX;
+        PORT_BASE_SPRITE_COUNT * PORT_BASE_VERTICES_PER_SPRITE *
+        PORT_BASE_FLOATS_PER_VERTEX;
     state->vertices = (GLfloat *)malloc(float_count * sizeof(GLfloat));
     if (state->vertices == NULL) {
         return false;
     }
 
     GLfloat *cursor = state->vertices;
-    for (uint32_t index = 0u; index < HMBTN_SPRITE_COUNT; ++index) {
+    for (uint32_t index = 0u; index < PORT_BASE_SPRITE_COUNT; ++index) {
         const GLfloat x0 = (GLfloat)((index % 64u) * 30u);
         const GLfloat y0 = (GLfloat)((index / 64u) * 30u);
         const GLfloat x1 = x0 + 29.0f;
@@ -470,7 +470,7 @@ static bool create_sprite_batch(HmbtnPigletState *state) {
     return true;
 }
 
-static void initialize_pad(HmbtnPigletState *state) {
+static void initialize_pad(PortBasePigletState *state) {
     int32_t user_id = -1;
     state->pad_handle = -1;
     sceUserServiceInitialize(NULL);
@@ -480,7 +480,7 @@ static void initialize_pad(HmbtnPigletState *state) {
     state->pad_handle = scePadOpen(user_id, 0, 0, NULL);
 }
 
-static void update_pad(HmbtnPigletState *state) {
+static void update_pad(PortBasePigletState *state) {
     OrbisPadData pad;
     if (state->pad_handle < 0 || scePadReadState(state->pad_handle, &pad) < 0) {
         return;
@@ -507,7 +507,7 @@ static void initialize_system_output(void) {
         (unsigned int)hide_result);
 }
 
-static bool present_frame(HmbtnPigletState *state) {
+static bool present_frame(PortBasePigletState *state) {
     const GLenum render_error = glGetError();
     if (render_error != GL_NO_ERROR) {
         native_log(
@@ -531,14 +531,14 @@ static bool present_frame(HmbtnPigletState *state) {
     return true;
 }
 
-static bool render_frame(HmbtnPigletState *state) {
+static bool render_frame(PortBasePigletState *state) {
     GLfloat identity[16];
     GLfloat projection[16];
     identity_matrix(identity);
     projection_1080p(projection);
 
-    glViewport(0, 0, HMBTN_OUTPUT_WIDTH, HMBTN_OUTPUT_HEIGHT);
-    if (HMBTN_RENDER_MODE_CLEAR_ONLY != 0u) {
+    glViewport(0, 0, PORT_BASE_OUTPUT_WIDTH, PORT_BASE_OUTPUT_HEIGHT);
+    if (PORT_BASE_RENDER_MODE_CLEAR_ONLY != 0u) {
         glDisable(GL_BLEND);
         glClearColor(0.0f, 0.25f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -565,14 +565,14 @@ static bool render_frame(HmbtnPigletState *state) {
         4,
         GL_FLOAT,
         GL_FALSE,
-        HMBTN_FLOATS_PER_VERTEX * sizeof(GLfloat),
+        PORT_BASE_FLOATS_PER_VERTEX * sizeof(GLfloat),
         state->vertices);
     glEnableVertexAttribArray(state->vertex_attribute);
-    glDrawArrays(GL_TRIANGLES, 0, HMBTN_SPRITE_COUNT * 6u);
+    glDrawArrays(GL_TRIANGLES, 0, PORT_BASE_SPRITE_COUNT * 6u);
     return present_frame(state);
 }
 
-static bool initialize(HmbtnPigletState *state) {
+static bool initialize(PortBasePigletState *state) {
     memset(state, 0, sizeof(*state));
     state->piglet_module = -1;
     state->shader_module = -1;
@@ -613,13 +613,13 @@ static bool initialize(HmbtnPigletState *state) {
     initialize_system_output();
     initialize_pad(state);
     native_log("[NATIVE] 1080p GPU probe ready: %u batched sprites, target=%u FPS\n",
-           HMBTN_SPRITE_COUNT, HMBTN_TARGET_FPS);
+           PORT_BASE_SPRITE_COUNT, PORT_BASE_TARGET_FPS);
     return true;
 }
 
 int main(void) {
-    HmbtnPigletState state;
-    uint64_t frame_samples[HMBTN_PROFILE_WINDOW];
+    PortBasePigletState state;
+    uint64_t frame_samples[PORT_BASE_PROFILE_WINDOW];
     uint64_t previous_frame_start = 0u;
     uint64_t total_frame_us = 0u;
     uint64_t maximum_frame_us = 0u;
@@ -653,18 +653,18 @@ int main(void) {
         maximum_frame_us =
             frame_interval_us > maximum_frame_us ? frame_interval_us : maximum_frame_us;
         frames_over_20ms +=
-            frame_interval_us > HMBTN_MAX_FRAME_TIME_US ? 1u : 0u;
+            frame_interval_us > PORT_BASE_MAX_FRAME_TIME_US ? 1u : 0u;
         frames_over_budget +=
-            frame_interval_us > HMBTN_SIMULATION_STEP_US ? 1u : 0u;
+            frame_interval_us > PORT_BASE_SIMULATION_STEP_US ? 1u : 0u;
         ++profiled_frames;
 
-        if (profiled_frames == HMBTN_PROFILE_WINDOW) {
+        if (profiled_frames == PORT_BASE_PROFILE_WINDOW) {
             qsort(
                 frame_samples,
-                HMBTN_PROFILE_WINDOW,
+                PORT_BASE_PROFILE_WINDOW,
                 sizeof(frame_samples[0]),
                 compare_u64);
-            const uint64_t average_us = total_frame_us / HMBTN_PROFILE_WINDOW;
+            const uint64_t average_us = total_frame_us / PORT_BASE_PROFILE_WINDOW;
             const uint64_t p95_us = frame_samples[284u];
             const uint64_t p99_us = frame_samples[296u];
             const uint64_t slowest_one_percent_us =
@@ -676,7 +676,7 @@ int main(void) {
                     : 0.0;
             native_log(
                 "[NATIVE PERF] 1080p sprites=%u avg=%lluus p95=%lluus p99=%lluus max=%lluus fps=%.2f 1%%low=%.2f missed=%u/%u over20ms=%u/%u\n",
-                HMBTN_SPRITE_COUNT,
+                PORT_BASE_SPRITE_COUNT,
                 (unsigned long long)average_us,
                 (unsigned long long)p95_us,
                 (unsigned long long)p99_us,
@@ -684,9 +684,9 @@ int main(void) {
                 fps,
                 one_percent_low,
                 frames_over_budget,
-                HMBTN_PROFILE_WINDOW,
+                PORT_BASE_PROFILE_WINDOW,
                 frames_over_20ms,
-                HMBTN_PROFILE_WINDOW);
+                PORT_BASE_PROFILE_WINDOW);
             total_frame_us = 0u;
             maximum_frame_us = 0u;
             profiled_frames = 0u;

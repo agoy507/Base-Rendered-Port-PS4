@@ -1,5 +1,5 @@
 # ======================================================================
-# Harvest Moon: Back to Nature - PS4 Native Port (.gitignore)
+# PS4 Native Render Port Base (.gitignore)
 # ======================================================================
 
 # --- Intermediate Build Artifacts ---
@@ -28,7 +28,7 @@ releases/*.pkg
 
 # --- Save Data & Memory Cards (Personal Saves) ---
 *.mcd
-HarvestMoonBTN-ID-Windows/saves/
+local_game_source/saves/
 pkg_staging/saves/
 
 # --- Operating System & Editor Files ---
@@ -51,7 +51,7 @@ npm-debug.log*
 /archive/
 /assets/
 /disc_extracted/
-/HarvestMoonBTN-ID-Windows/
+/local_game_source/
 /hd_pack_temp/
 /pkg_staging/
 /pkg_staging_hd/
@@ -82,14 +82,17 @@ npm-debug.log*
 /*--paid
 
 # Native Piglet products and SDK-supplied package material
-native/piglet_upstream/eboot.bin
-native/piglet_upstream/*.pkg
-native/piglet_upstream/*.gp4
-native/piglet_upstream/piglet/x64/
-native/piglet_upstream/sce_module/
-native/piglet_upstream/sce_sys/
-native/piglet_upstream/assets/audio/
-native/piglet_upstream/assets/fonts/
-native/piglet_upstream/assets/images/.gitkeep
-native/piglet_upstream/assets/misc/
-native/piglet_upstream/assets/videos/
+native/piglet_renderer/eboot.bin
+native/piglet_renderer/*.pkg
+native/piglet_renderer/*.gp4
+native/piglet_renderer/piglet/x64/
+native/piglet_renderer/sce_module/
+native/piglet_renderer/sce_sys/
+native/piglet_renderer/assets/audio/
+native/piglet_renderer/assets/fonts/
+native/piglet_renderer/assets/images/.gitkeep
+native/piglet_renderer/assets/misc/
+native/piglet_renderer/assets/videos/
+
+/config/project.local.bat
+/*-Windows/
