@@ -1,0 +1,80 @@
+# ======================================================================
+# Harvest Moon: Back to Nature - PS4 Native Port (.gitignore)
+# ======================================================================
+
+# --- Intermediate Build Artifacts ---
+*.o
+*.elf
+*.oelf
+*.tmp
+*.bak
+*.log
+
+# --- Specific Build Outputs ---
+build_ps4/*.o
+build_ps4/*.elf
+build_ps4/*.oelf
+build_ps4/*.tmp
+build_ps4/*.bak
+
+# --- PS4 Executable & Staging Artifacts ---
+pkg_staging/eboot.bin
+
+# --- Distribution Packages (Large Binaries) ---
+*.pkg
+*.pkg.bak
+*.zip
+releases/*.pkg
+
+# --- Save Data & Memory Cards (Personal Saves) ---
+*.mcd
+HarvestMoonBTN-ID-Windows/saves/
+pkg_staging/saves/
+
+# --- Operating System & Editor Files ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.vscode/
+.idea/
+
+# --- Node / NPM ---
+node_modules/
+npm-debug.log*
+
+# --- Source-only public repository boundary ---
+# The working tree contains private game media, extracted discs, historical
+# packages, and local toolchains.  Never publish those files with this port
+# base; downstream projects must provide their own legally obtained content.
+/archive/
+/assets/
+/disc_extracted/
+/HarvestMoonBTN-ID-Windows/
+/hd_pack_temp/
+/pkg_staging/
+/pkg_staging_hd/
+/releases/
+/temp_inspect/
+/uploads/
+/tools/
+/vendor/
+/build_ps4/
+/build_ps4_hd/
+/build_native_tests/
+/build_native_ps4/stage/
+/build_native_ps4/upstream_piglet_probe/
+
+# Root-level build products and diagnostics
+/*.bin
+/*.lo
+/*--paid
+
+# Native Piglet products and SDK-supplied package material
+native/piglet_upstream/eboot.bin
+native/piglet_upstream/*.pkg
+native/piglet_upstream/*.gp4
+native/piglet_upstream/piglet/x64/
+native/piglet_upstream/sce_module/
+native/piglet_upstream/sce_sys/
